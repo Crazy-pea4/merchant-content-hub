@@ -17,7 +17,8 @@ const ariaLabels = {
   'node.a11yDescription.default': '按回车选择卡片，使用方向键移动，按 Escape 取消选择。',
   'edge.a11yDescription.default': '按回车选择手动连线，可使用「移除关系」按钮删除。',
 };
-const nodeExtent: [[number, number], [number, number]] = [[-100000, -100000], [100192, 100104]];
+const cardWidth = 202, cardHeight = 124;
+const nodeExtent: [[number, number], [number, number]] = [[-100000, -100000], [100000 + cardWidth, 100000 + cardHeight]];
 
 function activateHandle(event: KeyboardEvent<HTMLDivElement>) {
   if (event.key === 'Enter' || event.key === ' ') {
@@ -29,7 +30,7 @@ function activateHandle(event: KeyboardEvent<HTMLDivElement>) {
 
 function Card({ data: { card, open } }: NodeProps<CardNode>) {
   const work = card.id.startsWith('w:');
-  return <article className={'board-node' + (work ? ' work' : '')}>
+  return <article className={'board-node' + (work ? ' work' : '') + (card.thumb ? ' with-thumb' : '')}>
     <Handle type="target" position={Position.Left} className="board-inlet" role="button"
       aria-label={'连接到 ' + card.name} tabIndex={0} onKeyDown={activateHandle}/>
     <div className="board-type">{work ? <FileText size={13}/> : <Video size={13}/>} {card.kind}</div>
@@ -58,7 +59,7 @@ function layout(cards: BoardCard[], sources: BoardLink[], saved: StudioSession['
   return cards.map(card => {
     const level = column(card.id), row = nextRow.get(level) || 0;
     nextRow.set(level, row + 1);
-    return saved[card.id] || { x: level * 296, y: row * 144 };
+    return saved[card.id] || { x: level * 296, y: row * 168 };
   });
 }
 
@@ -89,7 +90,7 @@ export default function StudioBoard({ session, cards, sources, save, open, add }
     const positions = layout(cards, sources, session.positions);
     return cards.map((card, i): CardNode => ({
       id: card.id, type: 'card', data: { card, open }, position: positions[i],
-      width: 192, height: 104, deletable: false, ariaLabel: card.name,
+      width: cardWidth, height: cardHeight, deletable: false, ariaLabel: card.name,
     }));
   }, [cards, sources, session.positions, open]);
   const [nodes, setNodes, applyNodeChanges] = useNodesState(baseNodes);
@@ -153,7 +154,7 @@ export default function StudioBoard({ session, cards, sources, save, open, add }
       isValidConnection={({ source, target }) => source !== target && !edges.some(e => e.source === source && e.target === target)}
       onConnect={({ source, target }) => { void save({ action: 'connect', from: source, to: target }); }}
       onClickConnectStart={() => setConnecting(true)} onClickConnectEnd={() => setConnecting(false)}>
-      <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="#bcbdb0"/>
+      <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="var(--fw-accent-line)"/>
       <Panel position="top-left" className="board-tools">
         <button onClick={add}><Plus size={16}/>加入素材</button>
         {connecting && <span role="status">选择另一张卡片的连接点，或点击空白处取消</span>}

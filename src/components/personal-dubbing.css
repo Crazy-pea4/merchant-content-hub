@@ -7,97 +7,97 @@
 .dubbing-script-form { display: grid; gap: 17px; }
 .dubbing-script-form .field, .dubbing-video-upload .field { margin: 0; min-width: 0; }
 .dubbing-script-form textarea { min-height: 220px; line-height: 1.9; resize: vertical; }
-.dubbing-text-meta { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; color: #88948b; font-size: 10px; margin-top: -9px; }
+.dubbing-text-meta { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; color: var(--fw-muted); font-size: 10px; margin-top: -9px; }
 .dubbing-text-meta > span:first-child { min-width: 0; overflow-wrap: anywhere; }
 .dubbing-text-meta > span:last-child { white-space: nowrap; }
 .dubbing-text-meta button { font-size: 10px; padding: 2px 5px; height: auto; }
-.dubbing-source-panel { border: 1px solid var(--line); background: #fafbf8; border-radius: 9px; padding: 18px; margin-bottom: 20px; }
+.dubbing-source-panel { border: 1px solid var(--line); background: var(--fw-field); border-radius: 9px; padding: 18px; margin-bottom: 20px; }
 .dubbing-video-upload { display: grid; gap: 12px; border-top: 1px solid var(--line); margin-top: 16px; padding-top: 16px; }
 .dubbing-video-upload > button { justify-self: start; }
-.dubbing-consent { display: flex; align-items: flex-start; gap: 9px; font-size: 11px; color: #7d8984; line-height: 1.8; cursor: pointer; }
+.dubbing-consent { display: flex; align-items: flex-start; gap: 9px; font-size: 11px; color: var(--fw-muted); line-height: 1.8; cursor: pointer; }
 .dubbing-consent > [data-slot=checkbox] { flex-shrink: 0; margin-top: 3px; }
 .dubbing-source-preview { margin-top: 17px; padding-top: 17px; border-top: 1px solid var(--line); font-size: 11px; }
 .dubbing-source-preview strong { min-width: 0; overflow-wrap: anywhere; }
 .dubbing-source-preview .row-between { align-items: flex-start; gap: 10px; }
-.dubbing-source-preview p { color: #7c8982; line-height: 1.9; margin: 12px 0; }
+.dubbing-source-preview p { color: var(--fw-muted); line-height: 1.9; margin: 12px 0; }
 .dubbing-transcript { max-height: 170px; overflow-y: auto; white-space: pre-wrap; overflow-wrap: anywhere; }
 .dubbing-voice-list { display: grid; gap: 13px; margin-top: 20px; }
 .dubbing-voice { border: 1px solid var(--line); padding: 17px; border-radius: 9px; min-width: 0; }
-.dubbing-voice.selected { border-color: #a5b49c; background: #f6f8f2; }
+.dubbing-voice.selected { border-color: var(--fw-accent-line); background: var(--fw-selected); }
 .dubbing-voice .row-between { gap: 9px; flex-wrap: wrap; }
 .dubbing-voice strong { color: var(--ink); font-size: 13px; overflow-wrap: anywhere; }
-.dubbing-voice small { display: block; color: #8a968d; font-size: 10px; margin: 10px 0; }
+.dubbing-voice small { display: block; color: var(--fw-muted); font-size: 10px; margin: 10px 0; }
 .dubbing-workspace audio { display: block; width: 100%; max-width: 100%; height: 38px; min-height: 38px; margin: 13px 0; }
 .dubbing-voice .button-row { margin-top: 12px; }
 .dubbing-voice .button-row { display: flex; flex-wrap: wrap; gap: 8px; }
-.dubbing-delete-voice { color: #b15f49; }
-.dubbing-draft-status { color: #819177; font-size: 11px; line-height: 1.8; }
+.dubbing-delete-voice { color: var(--fw-red); }
+.dubbing-draft-status { color: var(--fw-muted); font-size: 11px; line-height: 1.8; }
 .dubbing-video-upload input[type=file], .voice-sample-picker input[type=file] { height: 44px; padding: 8px 12px; line-height: 26px; }
 .dubbing-video-upload input[type=file]::file-selector-button, .voice-sample-picker input[type=file]::file-selector-button { height: 26px; line-height: 26px; margin: 0 10px 0 0; padding: 0; align-items: center; vertical-align: top; }
 .dubbing-voices .empty { padding: 40px 12px; }
-.dubbing-error { color: #af634b !important; font-size: 11px; line-height: 1.8; overflow-wrap: anywhere; margin: 10px 0; }
+.dubbing-error { color: var(--fw-red) !important; font-size: 11px; line-height: 1.8; overflow-wrap: anywhere; margin: 10px 0; }
 .dubbing-history-list { display: grid; gap: 15px; }
 .dubbing-result h3 { font-size: 15px; color: var(--ink); overflow-wrap: anywhere; }
 .dubbing-result > .row-between { gap: 12px; align-items: flex-start; }
 .dubbing-result .badge { flex-shrink: 0; }
-.dubbing-result-meta { display: flex; flex-wrap: wrap; gap: 8px 20px; color: #929d95; font-size: 10px; margin: 12px 0; }
-.dubbing-result-text { color: #76857b; font-size: 12px; line-height: 1.9; white-space: pre-wrap; overflow-wrap: anywhere; max-height: 150px; overflow-y: auto; }
+.dubbing-result-meta { display: flex; flex-wrap: wrap; gap: 8px 20px; color: var(--fw-muted); font-size: 10px; margin: 12px 0; }
+.dubbing-result-text { color: var(--fw-muted); font-size: 12px; line-height: 1.9; white-space: pre-wrap; overflow-wrap: anywhere; max-height: 150px; overflow-y: auto; }
 .dubbing-playback { display: flex; align-items: center; gap: 18px; margin-top: 12px; }
 .dubbing-playback audio { flex: 1 1 auto; min-width: 0; }
 .dubbing-playback > a { flex-shrink: 0; }
-.dubbing-audition { min-width: 0; display: grid; gap: 11px; padding: 16px; border: 1px solid #dce5d5; border-radius: 9px; background: #f8faf5; }
+.dubbing-audition { min-width: 0; display: grid; gap: 11px; padding: 16px; border: 1px solid var(--fw-line); border-radius: 9px; background: var(--fw-field); }
 .dubbing-audition-actions { display: flex; flex-wrap: wrap; gap: 9px; align-items: center; }
-.dubbing-audition-actions .dubbing-preview-button { flex: 1; color: #6b805f; border-color: #ccd9c3; }
+.dubbing-audition-actions .dubbing-preview-button { flex: 1; color: var(--fw-accent); border-color: var(--fw-line); }
 .dubbing-audition .form-note { margin: 0; line-height: 1.9; }
-.dubbing-audition-player { border-top: 1px solid #e2e8dc; padding-top: 13px; min-width: 0; }
-.dubbing-audition-player > span { display: flex; gap: 6px; align-items: center; font-size: 11px; color: #73856a; }
-.dubbing-audition-player small { color: #909c88; font-size: 10px; line-height: 1.8; }
+.dubbing-audition-player { border-top: 1px solid var(--fw-line); padding-top: 13px; min-width: 0; }
+.dubbing-audition-player > span { display: flex; gap: 6px; align-items: center; font-size: 11px; color: var(--fw-secondary); }
+.dubbing-audition-player small { color: var(--fw-muted); font-size: 10px; line-height: 1.8; }
 .dubbing-audition-player small { display: block; }
-.dubbing-expression { padding: 16px; border: 1px solid var(--line); border-radius: 9px; background: #fafbf8; min-width: 0; }
+.dubbing-expression { padding: 16px; border: 1px solid var(--line); border-radius: 9px; background: var(--fw-field); min-width: 0; }
 .dubbing-expression-heading { display: flex; align-items: center; gap: 8px 15px; justify-content: space-between; flex-wrap: wrap; margin-bottom: 15px; }
 .dubbing-expression-heading strong { color: var(--ink); font-size: 12px; }
-.dubbing-expression-heading span { color: #929d90; font-size: 10px; }
+.dubbing-expression-heading span { color: var(--fw-muted); font-size: 10px; }
 .dubbing-expression-fields { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; min-width: 0; }
 .dubbing-expression .form-note { margin: 12px 0 0; line-height: 1.9; }
 .voice-sample-picker { display: grid; gap: 15px; }
 .voice-sample-picker [role=tablist] { width: fit-content; }
-.voice-recorder { padding: 18px; border: 1px solid var(--line); border-radius: 10px; background: #fafbf8; }
+.voice-recorder { padding: 18px; border: 1px solid var(--line); border-radius: 10px; background: var(--fw-field); }
 .voice-recorder-status { display: flex; gap: 12px; align-items: center; margin-bottom: 16px; }
-.voice-recorder-mark { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: #e9eee5; color: #819575; flex-shrink: 0; }
+.voice-recorder-mark { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: var(--fw-raised); color: var(--fw-muted); flex-shrink: 0; }
 .voice-recorder-status > div { min-width: 0; flex: 1; }
 .voice-recorder-status strong { font-size: 13px; color: var(--ink); }
-.voice-recorder-status p { font-size: 11px; line-height: 1.8; color: #8b968d; margin-top: 5px; }
-.voice-recording-time { color: #839278; font-size: 16px; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.voice-recorder.is-recording .voice-recorder-mark { background: #fae7df; color: #c56949; }
-.voice-recorder .voice-stop { color: #b86042; border-color: #e8cabe; }
+.voice-recorder-status p { font-size: 11px; line-height: 1.8; color: var(--fw-muted); margin-top: 5px; }
+.voice-recording-time { color: var(--fw-muted); font-size: 16px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.voice-recorder.is-recording .voice-recorder-mark { background: var(--fw-raised); color: var(--fw-muted); }
+.voice-recorder .voice-stop { color: var(--fw-muted); border-color: var(--fw-line); }
 .voice-reading-prompt { border-top: 1px solid var(--line); margin-top: 17px; padding-top: 14px; }
-.voice-reading-prompt strong { color: #899780; font-size: 11px; font-weight: 500; }
-.voice-reading-prompt p { color: #7f8b80; font-size: 12px; line-height: 1.9; margin-top: 7px; }
-.voice-sample-preview { padding: 14px; background: #f2f6ef; border-radius: 8px; }
-.voice-sample-preview > span { font-size: 12px; color: #708367; }
+.voice-reading-prompt strong { color: var(--fw-muted); font-size: 11px; font-weight: 500; }
+.voice-reading-prompt p { color: var(--fw-muted); font-size: 12px; line-height: 1.9; margin-top: 7px; }
+.voice-sample-preview { padding: 14px; background: var(--fw-raised); border-radius: 8px; }
+.voice-sample-preview > span { font-size: 12px; color: var(--fw-secondary); }
 .voice-sample-preview audio { display: block; width: 100%; min-height: 38px; height: 38px; margin: 10px 0; }
-.voice-sample-preview small { font-size: 10px; line-height: 1.8; color: #8b9883; }
+.voice-sample-preview small { font-size: 10px; line-height: 1.8; color: var(--fw-muted); }
 .dubbing-sentence-editor { border: 1px solid var(--line); border-radius: 9px; overflow: hidden; min-width: 0; }
 .dubbing-sentence-list { display: grid; gap: 8px; padding: 13px; max-height: 320px; overflow-y: auto; }
-.dubbing-sentence-list > button { display: flex; gap: 10px; text-align: left; padding: 12px; border: 1px solid var(--line); border-radius: 7px; background: #fff; min-width: 0; cursor: pointer; }
-.dubbing-sentence-list > button[aria-pressed=true] { background: #f2f6ed; border-color: #92a586; }
-.dubbing-sentence-list > button > span { color: #909c88; font-size: 11px; flex-shrink: 0; }
+.dubbing-sentence-list > button { display: flex; gap: 10px; text-align: left; padding: 12px; border: 1px solid var(--line); border-radius: 7px; background: var(--fw-panel); min-width: 0; cursor: pointer; }
+.dubbing-sentence-list > button[aria-pressed=true] { background: var(--fw-raised); border-color: var(--fw-line); }
+.dubbing-sentence-list > button > span { color: var(--fw-muted); font-size: 11px; flex-shrink: 0; }
 .dubbing-sentence-list > button > div { min-width: 0; }
 .dubbing-sentence-list p { font-size: 12px; line-height: 1.8; color: var(--ink); overflow-wrap: anywhere; white-space: pre-wrap; }
-.dubbing-sentence-list small { display: block; font-size: 10px; color: #7d8d71; margin-top: 5px; overflow-wrap: anywhere; }
-.dubbing-sentence-settings { display: grid; gap: 13px; border-top: 1px solid var(--line); padding: 16px; background: #fafbf8; }
+.dubbing-sentence-list small { display: block; font-size: 10px; color: var(--fw-muted); margin-top: 5px; overflow-wrap: anywhere; }
+.dubbing-sentence-settings { display: grid; gap: 13px; border-top: 1px solid var(--line); padding: 16px; background: var(--fw-field); }
 .dubbing-sentence-settings > strong { font-size: 12px; color: var(--ink); }
 .dubbing-script-form .dubbing-sentence-settings textarea { min-height: 92px; }
 .dubbing-sentence-settings .button-row { display: flex; flex-wrap: wrap; gap: 8px; }
-.dubbing-sentence-range { display: grid; gap: 8px; font-size: 11px; color: #819076; }
+.dubbing-sentence-range { display: grid; gap: 8px; font-size: 11px; color: var(--fw-muted); }
 .dubbing-sentence-range > span { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; }
-.dubbing-sentence-range input { accent-color: #819575; width: 100%; min-height: 25px; }
+.dubbing-sentence-range input { accent-color: var(--fw-button); width: 100%; min-height: 25px; }
 .dubbing-sentence-range output { font-variant-numeric: tabular-nums; }
-.dubbing-record-parts { margin: 13px 0; font-size: 11px; color: #7d8c74; }
+.dubbing-record-parts { margin: 13px 0; font-size: 11px; color: var(--fw-muted); }
 .dubbing-record-parts summary { cursor: pointer; }
-.dubbing-record-parts > div { margin-top: 10px; border-left: 2px solid #d8e2cf; padding-left: 10px; overflow-wrap: anywhere; }
+.dubbing-record-parts > div { margin-top: 10px; border-left: 2px solid var(--fw-line); padding-left: 10px; overflow-wrap: anywhere; }
 .dubbing-record-parts p { white-space: pre-wrap; color: var(--ink); }
-.dubbing-record-parts small { color: #929d8d; font-size: 10px; }
+.dubbing-record-parts small { color: var(--fw-muted); font-size: 10px; }
 @media (max-width: 1100px) { .dubbing-layout { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 700px) {
   .dubbing-workspace { gap: 18px; }

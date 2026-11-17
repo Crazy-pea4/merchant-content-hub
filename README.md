@@ -7,6 +7,8 @@
 - 展开「创作工具」即可使用声音克隆、配音和抖音文案提取。项目历史、客户审核与交付从侧栏底部的「历史项目管理」进入（`/archive`）。
 - 每个部署是一间个人创作室，以站点访问口令保护。设置 `AI_*` 可生成文本，设置 `VISION_*` 可参考视频画面。未配置模型时会显示本地示例。
 
+右上角的太阳或月亮可切换暗色与明亮主题，同一浏览器会记住选择。首页、对话、画布、资产、工具、历史项目和客户审核共用这套外观。[查看全部页面的 GPT Image 双主题设计稿](docs/design/README.md)。
+
 ## 历史项目的业务操作
 
 [商家内容制作与交付流程](docs/DELIVERY_WORKFLOW.md) 包含成片交付与代运营流程图、团队分工、页面操作和交付检查清单；另有[适合转发的 PDF](docs/商家内容制作与交付流程.pdf)。
@@ -230,16 +232,17 @@ npm run test:backend
 - HTTP 验收自动启动独立临时数据库和随机端口服务，完成真实上传、SRT 索引、FFmpeg 粗剪、媒体 Range 下载、客户审核、交付和运营排期；结束后清理，不写入你们的工作数据。
 - `npm run test:search` 使用隔离 Docker、合成视频与系统 Chrome，验证多素材分组、返回列表、慢请求取消、时间定位和手机布局，不调用真实 AI / ASR。
 - `npm run test:creation` 在隔离 Docker 中检查默认手动选材、全选 / 清空、项目切换、失效处理和手机布局；使用系统 Chrome 与本地演示模板，不调用真实模型。
+- `npm run test:appearance` 在隔离数据和系统 Chrome 中检查暗色与明亮主题、刷新恢复、首页插画、会话和资产搜索、画布、月历及手机布局。两种主题的实机截图默认存放在 `data/qa/design-review/`。
 - 浏览器验收使用**系统安装的 Google Chrome**，不下载或使用内置 Chromium。需本机已安装 Chrome；覆盖桌面与 390px 手机布局、上传、创作、审核和下载，以及 shadcn 弹窗焦点、Tabs 键盘、Checkbox 表单值和删除确认。截图默认存放 `data/qa/`，可用 `SCREENSHOT_DIR` 更改。
 - 接口 / 浏览器验收依赖已完成的生产构建。未运行格式化或格式检查。
 
 ## UI 组件与维护
 
-界面使用 **shadcn/ui（New York v4 / Radix UI）+ Tailwind CSS v4**。已用于 Button、Input、Textarea、Select、Dialog、Checkbox、RadioGroup、Tabs、AlertDialog、Badge 和 Label，覆盖团队工作台与客户审核页面。
+界面使用 **shadcn/ui（New York v4 / Radix UI）+ Tailwind CSS v4**。已用于 Button、Input、Textarea、Select、Dialog、Checkbox、RadioGroup、Tabs、AlertDialog、Badge 和 Label，用于创作室、历史项目与客户审核页面。
 
 - `src/components/ui/`：官方 registry 组件源码，保留在项目内维护；来源与 MIT 许可见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
 - `components.json`：组件路径与主题配置；`src/lib/utils.ts` 提供 `cn`。
-- `src/app/shadcn.css`：Tailwind 入口与品牌主题；原有布局与兼容样式位于 `globals.css`。
+- `src/app/appearance.css` 定义两种主题的颜色与共享外观。`src/app/shadcn.css` 连接 Tailwind 和组件主题，`src/components/creator-studio.css` 管理个人创作室布局。
 - `src/components/ui.tsx`：业务弹窗、字段与 Select 适配，保留现有 FormData 提交值、空选择值及焦点恢复行为。
 - 素材筛选支持 Tabs 方向键；Checkbox 支持键盘；弹窗与删除确认由 Radix 管理焦点和关闭行为。
 

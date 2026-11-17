@@ -9,6 +9,7 @@
     "typecheck": "tsc --noEmit",
     "test": "node --import tsx --test tests/*.test.ts",
     "test:smoke": "node scripts/smoke.mjs",
+    "test:appearance": "node scripts/appearance-smoke.mjs",
     "test:studio": "node scripts/studio-smoke.mjs",
     "test:browser": "node scripts/browser-smoke.mjs",
     "test:docker": "node scripts/docker-smoke.mjs",
