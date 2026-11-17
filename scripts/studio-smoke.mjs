@@ -80,25 +80,92 @@ try {
   assert.equal(images.length, 6);
   assert.ok(images.every(part => part.image_url.url.startsWith('data:image/jpeg;base64,')));
   assert.notEqual(images[0].image_url.url, images[3].image_url.url);
+  const sessionId = new URL(page.url()).searchParams.get('s');
+  const { assets } = await state();
+  const redId = 'a:' + assets.find(asset => asset.name === 'red.mp4').id;
+  const blueId = 'a:' + assets.find(asset => asset.name === 'blue.mp4').id;
+  const boardUrl = harness.base + '/api/studio-sessions/' + sessionId + '/board';
+  const persisted = async () => (await state()).sessions.find(s => s.id === sessionId);
+  // Seed the format written by the previous canvas before opening React Flow.
+  const original = { x: -72, y: 200 };
+  assert.ok((await page.request.patch(boardUrl, { data: { action: 'move', node: redId, ...original } })).ok());
+  assert.ok((await page.request.patch(boardUrl, { data: { action: 'connect', from: redId, to: blueId } })).ok());
+
   await page.getByRole('navigation').getByRole('button', { name: '素材画布' }).click();
-  const nodes = page.locator('.board-node');
-  await expect(nodes).toHaveCount(3);
-  await expect(page.locator('.board-lines .automatic')).toHaveCount(2);
+  const nodes = page.locator('.react-flow__node');
+  const automatic = page.locator('.react-flow__edge.automatic');
+  const manual = page.locator('.react-flow__edge.manual');
   const source = nodes.filter({ hasText: 'red.mp4' }), target = nodes.filter({ hasText: 'blue.mp4' });
+  await expect(nodes).toHaveCount(3);
+  await expect(automatic).toHaveCount(2);
+  await expect(manual).toHaveCount(1);
+  function position(node) {
+    return node.evaluate(el => {
+      const matrix = new DOMMatrixReadOnly(getComputedStyle(el).transform);
+      return { x: matrix.e, y: matrix.f };
+    });
+  }
+  await expect.poll(() => position(source)).toEqual(original);
+  const scale = page.locator('.board-zoom span');
+  await expect(scale).toHaveText('100%');
+  await page.getByRole('button', { name: '放大', exact: true }).click();
+  await expect(scale).toHaveText('120%');
+  await page.getByRole('button', { name: '适应画布' }).click();
+  await expect(scale).toHaveText('100%');
+
+  await manual.focus();
+  await page.keyboard.press('Enter');
+  await page.getByRole('button', { name: '移除关系' }).click();
+  await expect(manual).toHaveCount(0);
   await source.locator('.board-port').click();
   await target.locator('.board-inlet').click();
-  await expect(page.locator('.board-lines .manual')).toHaveCount(1);
+  await expect(manual).toHaveCount(1);
+  await target.locator('.board-port').dragTo(source.locator('.board-inlet'));
+  await expect(manual).toHaveCount(2);
+  await expect(automatic).toHaveCount(2);
   const box = await source.locator('.board-type').boundingBox();
   await page.mouse.move(box.x + 25, box.y + 6);
   await page.mouse.down();
   await page.mouse.move(box.x + 45, box.y + 66, { steps: 6 });
   await page.mouse.up();
-  const sessionId = new URL(page.url()).searchParams.get('s');
-  await expect.poll(async () => Object.keys((await state()).sessions.find(s => s.id === sessionId).positions).length).toBe(1);
+  await expect.poll(async () => (await persisted()).positions[redId]).not.toEqual(original);
+  const savedPosition = (await persisted()).positions[redId];
   await page.reload();
-  await expect(page.locator('.board-lines .manual')).toHaveCount(1);
+  await expect(manual).toHaveCount(2);
+  await expect.poll(() => position(source)).toEqual(savedPosition);
+  const pane = page.locator('.react-flow__pane');
+  const area = await pane.boundingBox();
+  const bounds = () => source.boundingBox();
+  await expect.poll(async () => (await bounds()).x).toBeGreaterThan(area.x + 24);
+  const beforePan = await bounds();
+  await page.mouse.move(area.x + 60, area.y + 110);
+  await page.mouse.down();
+  await page.mouse.move(area.x + 100, area.y + 135, { steps: 5 });
+  await page.mouse.up();
+  await expect.poll(async () => (await bounds()).x - beforePan.x).toBeCloseTo(40, 0);
+  assert.deepEqual((await persisted()).positions[redId], savedPosition);
+  await page.getByRole('button', { name: '适应画布' }).click();
+  await expect.poll(async () => (await bounds()).x).toBeCloseTo(beforePan.x, 0);
+  // A rejected write returns the card to its last persisted position.
+  await page.route(boardUrl, route => route.fulfill({
+    status: 409, contentType: 'application/json', body: JSON.stringify({ error: '移动未保存' }),
+  }), { times: 1 });
+  const dragPoint = await source.locator('.board-type').boundingBox();
+  await page.mouse.move(dragPoint.x + 18, dragPoint.y + 8);
+  await page.mouse.down();
+  await page.mouse.move(dragPoint.x + 50, dragPoint.y + 34, { steps: 5 });
+  await page.mouse.up();
+  await expect(page.getByText('移动未保存', { exact: true })).toBeVisible();
+  await expect.poll(() => position(source)).toEqual(savedPosition);
+  await page.getByRole('button', { name: '关闭提示' }).click();
   if (process.env.STUDIO_SCREENSHOTS) await page.screenshot({ path: join(process.env.STUDIO_SCREENSHOTS, '创作室-画布.png') });
-  await page.getByRole('button', { name: '我的资产', exact: true }).click();
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.getByRole('button', { name: '适应画布' }).click();
+  await expect(source.getByRole('button', { name: 'red.mp4', exact: true })).toBeInViewport({ ratio: 1 });
+  await source.getByRole('button', { name: 'red.mp4', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'red.mp4' })).toBeVisible();
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.getByRole('navigation').getByRole('button', { name: '我的资产', exact: true }).click();
   await expect(page.locator('.shelf-card')).toHaveCount(5);
   await page.getByRole('button', { name: '创作工具' }).click();
   await page.getByRole('button', { name: '声音克隆与配音' }).click();

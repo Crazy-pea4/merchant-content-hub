@@ -7,7 +7,7 @@ import type { Asset } from '@/shared/types';
 import { emptyStudioSession, studioModes, type BoardChange, type BoardLink, type StudioMode, type StudioState, type StudioTurn } from '@/shared/studio';
 import { KindIcon, Library, MediaReader, shelfItems, StudioDocument, type ShelfItem } from './studio-library';
 import type { ToolSource } from './tool-asset-button';
-import StudioBoard from './studio-board';
+const StudioBoard = dynamic(() => import('./studio-board'));
 
 const DubbingTool = dynamic(() => import('./dubbing-tool'));
 const DouyinTool = dynamic(() => import('./douyin-tool'));
