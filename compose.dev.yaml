@@ -1,0 +1,5 @@
+# Optional local-development database port; production Compose keeps PostgreSQL private.
+services:
+  db:
+    ports:
+      - "127.0.0.1:${HUB_DB_PORT:-5433}:5432"

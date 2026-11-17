@@ -1,0 +1,11 @@
+{
+  "name": "@fieldwork/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "commonjs",
+  "dependencies": {
+    "fastify": "5.12.8",
+    "pg": "8.23.1",
+    "zod": "3.25.76"
+  }
+}

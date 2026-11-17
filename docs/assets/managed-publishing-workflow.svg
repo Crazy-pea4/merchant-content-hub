@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="509.27559055118115" height="67" viewBox="0 0 509.27559055118115 67" role="img">
+<title>商家内容制作与交付流程图</title>
+<rect width="100%" height="100%" fill="white"/>
+<rect x="0.0" y="10" width="110" height="45" rx="8" fill="#EEF4EF" stroke="#DBE5E0"/>
+<text x="55.0" y="29" text-anchor="middle" font-family="Arial Unicode MS, PingFang SC, Microsoft YaHei, sans-serif" font-size="10.5" fill="#25383A">审核通过</text>
+<text x="55.0" y="45" text-anchor="middle" font-family="Arial Unicode MS, PingFang SC, Microsoft YaHei, sans-serif" font-size="8" fill="#667A78">商家确认成片</text>
+<polyline points="110.0,33 133.09186351706037,33" fill="none" stroke="#667A78" stroke-width="1.1"/>
+<polygon points="133.09186351706037,33 127.09186351706037,30.200000000000003 127.09186351706037,35.8" fill="#667A78" stroke="#667A78"/>
+<rect x="133.09186351706037" y="10" width="110" height="45" rx="8" fill="#EEF4EF" stroke="#DBE5E0"/>
+<text x="188.09186351706037" y="29" text-anchor="middle" font-family="Arial Unicode MS, PingFang SC, Microsoft YaHei, sans-serif" font-size="10.5" fill="#25383A">设置排期</text>
+<text x="188.09186351706037" y="45" text-anchor="middle" font-family="Arial Unicode MS, PingFang SC, Microsoft YaHei, sans-serif" font-size="8" fill="#667A78">平台内协作</text>
+<polyline points="243.09186351706037,33 266.18372703412075,33" fill="none" stroke="#667A78" stroke-width="1.1"/>
+<polygon points="266.18372703412075,33 260.18372703412075,30.200000000000003 260.18372703412075,35.8" fill="#667A78" stroke="#667A78"/>
+<rect x="266.18372703412075" y="10" width="110" height="45" rx="8" fill="#FFF3EA" stroke="#DBE5E0"/>
+<text x="321.18372703412075" y="29" text-anchor="middle" font-family="Arial Unicode MS, PingFang SC, Microsoft YaHei, sans-serif" font-size="10.5" fill="#25383A">手动发布</text>
+<text x="321.18372703412075" y="45" text-anchor="middle" font-family="Arial Unicode MS, PingFang SC, Microsoft YaHei, sans-serif" font-size="8" fill="#667A78">到目标平台执行</text>
+<polyline points="376.18372703412075,33 399.27559055118115,33" fill="none" stroke="#667A78" stroke-width="1.1"/>
+<polygon points="399.27559055118115,33 393.27559055118115,30.200000000000003 393.27559055118115,35.8" fill="#667A78" stroke="#667A78"/>
+<rect x="399.27559055118115" y="10" width="110" height="45" rx="8" fill="#EEF4EF" stroke="#DBE5E0"/>
+<text x="454.27559055118115" y="29" text-anchor="middle" font-family="Arial Unicode MS, PingFang SC, Microsoft YaHei, sans-serif" font-size="10.5" fill="#25383A">确认已发布</text>
+<text x="454.27559055118115" y="45" text-anchor="middle" font-family="Arial Unicode MS, PingFang SC, Microsoft YaHei, sans-serif" font-size="8" fill="#667A78">回平台登记</text>
+</svg>
