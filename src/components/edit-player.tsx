@@ -1,16 +1,26 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Play, Pause, RefreshCw } from 'lucide-react';
-import { clipLength, editFps, editSizes, timelineLength, timelineCues, type Timeline } from '@/shared/video-edit';
+import { Play, Pause, RefreshCw, Maximize, Minimize, Volume2, VolumeX } from 'lucide-react';
+import { clipLength, editFps, editSizes, editTimecode, timelineLength, timelineCues, type Timeline } from '@/shared/video-edit';
 import type { Asset } from '@/shared/types';
 
 export interface PlayPosition { frame:number; nonce:number; play?:boolean }
-function clock(frame:number) {
-  const seconds=Math.floor(frame/editFps);
-  return Math.floor(seconds/60)+':'+String(seconds%60).padStart(2,'0')+'.'+String(Math.floor(frame%editFps*100/editFps)).padStart(2,'0');
-}
 export function EditPlayer({timeline,assets,seek,onFrame}:{timeline:Timeline;assets:Asset[];seek?:PlayPosition;onFrame?:(n:number)=>void}){
+  const player=useRef<HTMLDivElement>(null);
+  const [muted,setMuted]=useState(false),[fullscreen,setFullscreen]=useState(false);
+  useEffect(()=>{
+    const onChange=()=>setFullscreen(document.fullscreenElement===player.current);
+    document.addEventListener('fullscreenchange',onChange);
+    return ()=>document.removeEventListener('fullscreenchange',onChange);
+  },[]);
+  async function toggleFullscreen(){
+    try{
+      if(document.fullscreenElement===player.current)await document.exitFullscreen();
+      else if(player.current?.requestFullscreen)await player.current.requestFullscreen();
+      else (video.current as (HTMLVideoElement & {webkitEnterFullscreen?:()=>void})|null)?.webkitEnterFullscreen?.();
+    }catch{ setError('暂时无法进入全屏'); }
+  }
   const total=timelineLength(timeline);
   const transportKey=useMemo(()=>JSON.stringify(timeline),[timeline]);
   const cues=useMemo(()=>timeline.captions?timelineCues(timeline,assets):[],[timeline,assets]);
@@ -66,13 +76,15 @@ export function EditPlayer({timeline,assets,seek,onFrame}:{timeline:Timeline;ass
   },[clip?.id,clip?.assetId,offset,serial]);
   const caption=cues.find(s=>s.start!<=frame/editFps&&s.end!>frame/editFps);
   const voiceUrl=timeline.voiceId.startsWith('m:')?'/api/dubbing-files/'+timeline.voiceId.slice(2):timeline.voiceId?'/api/files/'+timeline.voiceId.slice(2):undefined;
-  return <div className="cut-player">
+  return <div ref={player} className="cut-player">
     <div className="cut-screen"><div className={'cut-picture '+timeline.aspect} style={{aspectRatio:width+'/'+height}}>
-      {clip?<video key={clip.assetId} ref={video} playsInline preload="auto" src={'/api/edit-previews/'+clip.assetId} poster={source?.thumbnailKey?'/api/files/'+source.id+'?thumb':undefined}/>:<span>选择视频开始剪辑</span>}
+      {clip?<video muted={muted} key={clip.assetId} ref={video} playsInline preload="auto" src={'/api/edit-previews/'+clip.assetId} poster={source?.thumbnailKey?'/api/files/'+source.id+'?thumb':undefined}/>:<span>选择视频开始剪辑</span>}
       {caption&&<span className="cut-caption">{caption.text}</span>}
     </div>{error&&<button className="cut-retry" onClick={()=>jump(frame,true)}><RefreshCw size={15}/>{error} · 重试</button>}</div>
-    {voiceUrl&&<audio ref={voice} src={voiceUrl} preload="auto" onError={()=>{setError('配音加载失败');wantsPlay.current=false;setPlaying(false);video.current?.pause();}}/>}
+    {voiceUrl&&<audio muted={muted} ref={voice} src={voiceUrl} preload="auto" onError={()=>{setError('配音加载失败');wantsPlay.current=false;setPlaying(false);video.current?.pause();}}/>}
     <div className="cut-transport"><button disabled={!clip} aria-label={playing?'暂停剪辑预览':'播放剪辑预览'} onClick={()=>jump(frame>=total?0:frame,!playing)}>{playing?<Pause size={17}/>:<Play size={17}/>}</button>
-      <time>{clock(frame)} / {clock(total)}</time><input type="range" aria-label="成片播放位置" min={0} max={total||1} value={frame} disabled={!total} onChange={e=>jump(+e.target.value,false)}/></div>
+      <time>{editTimecode(frame)} <span>/ {editTimecode(total)}</span></time><input className="cut-range" style={{backgroundSize:(total?frame*100/total:0)+'% 100%'}} type="range" aria-label="成片播放位置" min={0} max={total||1} value={frame} disabled={!total} onChange={e=>jump(+e.target.value,false)}/>
+      <button aria-label={muted?'取消预览静音':'预览静音'} aria-pressed={muted} onClick={()=>setMuted(v=>!v)}>{muted?<VolumeX size={18}/>:<Volume2 size={18}/>}</button>
+      <button aria-label={fullscreen?'退出全屏':'全屏预览'} onClick={()=>void toggleFullscreen()}>{fullscreen?<Minimize size={17}/>:<Maximize size={17}/>}</button></div>
   </div>;
 }

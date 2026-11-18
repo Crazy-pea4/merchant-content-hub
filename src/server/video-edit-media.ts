@@ -19,6 +19,11 @@ function mediaPath(key:string){if(!key || basename(key)!==key)throw new ApiError
 async function ffmpeg(args:string[],cwd:string,signal?:AbortSignal){
   await exec('ffmpeg',['-nostdin','-hide_banner','-loglevel','error','-y',...args],{cwd,signal,timeout:600000,maxBuffer:512000});
 }
+export async function editSourceMetadata(key: string) {
+  const source = await editSource(key);
+  const {width, height} = await inspect(mediaPath(source.storageKey));
+  return {width, height};
+}
 export async function editPreviewResponse(key:string,req:Request){
   const a=await editSource(key),dir=join(dataDir,'edit-previews');
   const cacheKey=createHash('sha256').update(a.storageKey).digest('hex');

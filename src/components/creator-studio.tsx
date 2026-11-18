@@ -66,7 +66,7 @@ export default function CreatorStudio(){
     const newRoute={view,session,item}, url=new URL('/',location.origin);
     if(view!=='chat')url.searchParams.set('tab',view);if(session)url.searchParams.set('s',session);if(item)url.searchParams.set('item',item);
     if(location.pathname+location.search!==url.pathname+url.search)history.pushState(null,'',url);
-    setRoute(newRoute);if(view==='dubbing'||view==='douyin')setToolsOpen(true);setDrawer(false);setPicker(false);if(view==='assets'||view==='board')void refresh().catch(report);
+    setRoute(newRoute);if(view==='dubbing'||view==='douyin')setToolsOpen(true);else if(view==='edit')setToolsOpen(false);setDrawer(false);setPicker(false);if(view==='assets'||view==='board')void refresh().catch(report);
   }
   const allItems=useMemo(()=>data?shelfItems(data):[],[data]),item=allItems.find(i=>i.id===route.item);
   const projects=data?.projects||[], project=projects.find(p=>p.id===route.session);
@@ -170,6 +170,8 @@ export default function CreatorStudio(){
   if(!data)return <div className="studio-login"><div><Brand/><p>{initialError||'正在打开创作室…'}</p>{initialError&&<button onClick={()=>void refresh().catch(report)}>重新加载</button>}</div></div>;
   const openItem=(id:string)=>{const e=data.edits.find(v=>'e:'+v.id===id);if(e)go('edit',e.projectId,id);else go('assets',route.session,id);};
   const recents=projects.map(p=>({id:p.id,title:p.name,at:data.sessions.find(s=>s.id===p.id)?.updatedAt||p.createdAt})).sort((a,b)=>b.at.localeCompare(a.at));
+  const editing = route.view==='edit' && !!item?.edit;
+  const search=<StudioSearch sessions={recents} items={allItems} openChat={id=>go('chat',id)} openItem={openItem}/>;
   const isHome = route.view === 'chat' && !hasStory && !sending;
   function startFrom(id: typeof shortcuts[number]['id']) {
     if (id === 'board' || id === 'dubbing' || id === 'douyin') { go(id, id === 'board' ? '' : route.session); return; }
@@ -201,7 +203,7 @@ export default function CreatorStudio(){
     <button className="send-prompt" aria-label="发送创作要求" disabled={writing||(!draft.text.trim()&&!draft.files.length&&!draft.ids.length)} onClick={()=>void send()}>{writing?<LoaderCircle size={18} className="spin"/>:<ArrowUp size={20}/>}</button></div>
     {draft.files.length>0&&<small className="upload-note">发送即确认有权使用所选文件，画面与逐字稿可用于模型创作。</small>}
   </div>;
-  return <div className={'creator-shell'+(route.view==='chat'&&!isHome?' session-open':'')}>
+  return <div className={'creator-shell'+(route.view==='chat'&&!isHome?' session-open':'')+(editing?' editing-shell':'')}>
     {drawer&&<button className="rail-mask" aria-label="关闭导航" onClick={()=>setDrawer(false)}/>}
     <aside className={'creator-rail'+(drawer?' open':'')}><button className="brand-home" aria-label="片场首页" onClick={()=>go('chat','')}><Brand/></button>
       <button className="start-chat" onClick={()=>{go('chat','');requestAnimationFrame(()=>input.current?.focus());}}><SquarePen size={17}/>新创作<Plus size={14}/></button>
@@ -210,10 +212,10 @@ export default function CreatorStudio(){
         <button className={route.view==='assets'?'current':''} onClick={()=>go('assets')}><Layers3/>我的资产</button><button className={route.view==='board'?'current':''} onClick={()=>go('board')}><Grid2X2/>素材画布</button>
         <button aria-expanded={toolsOpen} onClick={()=>setToolsOpen(!toolsOpen)}><Clapperboard/>创作工具<ChevronDown className="rail-more"/></button>
         {toolsOpen&&<div className="rail-sub"><button onClick={()=>setEditPicker({})}><Film/>视频剪辑</button><button onClick={()=>go('dubbing')}><Mic2/>声音克隆与配音</button><button onClick={()=>go('douyin')}><ScanLine/>抖音文案提取</button><a href="/narration"><Video/>视频旁白</a></div>}
-      </nav><div className="recent-title">最近创作</div><div className="recent-list">{recents.map(s=><button key={s.id} className={s.id===route.session?'current':''} onClick={()=>go('chat',s.id)}><MessageSquare size={14}/><span>{s.title}</span></button>)}{!recents.length&&<small>你的创作对话会出现在这里</small>}</div>
-      <div className="rail-footer"><i><Cat size={18}/></i><span>个人创作室</span><a href="/archive" title="历史项目管理" aria-label="历史项目管理"><Archive size={15}/></a></div>
+      </nav><div className="recent-title">最近创作</div><div className="recent-list">{recents.map(s=><button key={s.id} className={s.id===route.session?'current':''} onClick={()=>go('chat',s.id)}><MessageSquare size={14}/><span>{s.title}</span>{editing&&<time dateTime={s.at}>{new Date(s.at).toLocaleDateString('zh-CN',{month:'numeric',day:'numeric'})}</time>}</button>)}{!recents.length&&<small>你的创作对话会出现在这里</small>}</div>
+      <div className="rail-footer"><i><Cat size={18}/></i><span>个人创作室</span>{editing&&search}<a href="/archive" title="历史项目管理" aria-label="历史项目管理"><Archive size={15}/></a></div>
     </aside>
-    <div className={'creator-main'+(isHome?' home-main':'')}><header className="studio-header"><button className="rail-toggle" aria-label="打开导航" onClick={()=>setDrawer(true)}><Menu size={20}/></button><span>片场</span><ChevronRight size={13}/><b>{names[route.view]}</b>{route.view==='assets'&&item&&<><ChevronRight size={13}/><b>{item.turn||item.content?'作品文稿':'素材详情'}</b></>}<StudioSearch sessions={recents} items={allItems} openChat={id=>go('chat',id)} openItem={openItem}/><div className="studio-status"><i className={data.ai?'online':''}/>{data.ai?'AI 已配置':'本地示例模式'}</div></header>
+    <div className={'creator-main'+(isHome?' home-main':'')}>{!editing&&<header className="studio-header"><button className="rail-toggle" aria-label="打开导航" onClick={()=>setDrawer(true)}><Menu size={20}/></button><span>片场</span><ChevronRight size={13}/><b>{names[route.view]}</b>{route.view==='assets'&&item&&<><ChevronRight size={13}/><b>{item.turn||item.content?'作品文稿':'素材详情'}</b></>}{search}<div className="studio-status"><i className={data.ai?'online':''}/>{data.ai?'AI 已配置':'本地示例模式'}</div></header>}
     {route.view==='chat'?<div className={'chat-area'+(hasStory||sending?' active':'')}>
       {isHome?<div className="studio-welcome">
         <section className="welcome-hero"><header><h1>今天，想创作什么？</h1><p>从一个想法或几段镜头开始，写下你的下一部作品。</p></header>{composer}</section>
@@ -244,7 +246,7 @@ export default function CreatorStudio(){
         {sending&&(sending===route.session||sending==='new')&&!session.turns.some(t=>t.status==='writing')&&<div className="turn-status" role="status"><LoaderCircle className="spin" size={16}/>{stage}…</div>}<div ref={bottom}/></div></section>
         <div className="conversation-compose">{composer}</div></>}
     </div>:route.view==='board'?<><div className="board-heading"><h1>素材画布</h1><select aria-label="选择创作画布" value={route.session} onChange={e=>go('board',e.target.value)}><option value="">新创作</option>{recents.map(s=><option key={s.id} value={s.id}>{s.title}</option>)}</select></div><StudioBoard key={route.session} session={session} cards={boardItems.map(i=>({id:i.id,name:i.title,kind:i.kind,description:i.body.replace(/[#*]/g,'').slice(0,60)||i.kind,thumb:i.asset?.thumbnailKey?i.url+'?thumb=1':(i.kind==='图片'?i.url:undefined)}))} sources={links} save={boardChange} open={openItem} add={()=>setPicker(true)}/></>:
-    route.view==='edit'?<div className="studio-scroll">{item?.edit?<VideoEditor key={item.edit.id} edit={item.edit} assets={data.assets} jobs={data.exports} media={data.media} refresh={refresh} back={()=>go('assets',route.session)} openFile={id=>openItem('a:'+id)} upload={files=>uploadVideos(files,item.edit!.projectId)}/>:<div className="studio-empty"><h2>打开剪辑草稿</h2><button onClick={()=>setEditPicker({})}>选择视频开始</button></div>}</div>:
+    route.view==='edit'?<div className="studio-scroll">{item?.edit?<VideoEditor key={item.edit.id} edit={item.edit} sessionTitle={session.title} siblings={edits} openEdit={id=>openItem('e:'+id)} openNavigation={()=>setDrawer(true)} assets={data.assets} jobs={data.exports} media={data.media} refresh={refresh} back={()=>go('assets',route.session)} openFile={id=>openItem('a:'+id)} upload={files=>uploadVideos(files,item.edit!.projectId)}/>:<div className="studio-empty"><h2>打开剪辑草稿</h2><button onClick={()=>setEditPicker({})}>选择视频开始</button></div>}</div>:
     route.view==='assets'?<div className="studio-scroll">{route.item&&item?<div className="asset-reader"><button className="reader-back" onClick={()=>go('assets')}><ArrowLeft size={15}/>我的资产</button>
       {item.asset&&editableVideo(item.asset)&&<button className="cut-new" onClick={()=>void makeEdit([item.asset!.id])}><Film size={15}/>剪辑此视频</button>}
       {item.turn||item.content?documentFor(item):<MediaReader item={item} sessionTitle={projects.find(p=>p.id===item.projectId)?.name} onAuthorize={async()=>{try{await api('assets/'+item.asset!.id,'PATCH',{rights:'authorized'});await refresh();}catch(e){report(e);}}} use={item.asset&&usable(item.asset)?()=>{const key=route.session||item.projectId||'';updateDraft({ids:[item.asset!.id]},key||'new');go('chat',key);}:undefined}/>}</div>:<Library items={allItems} onOpen={openItem} onEdit={()=>setEditPicker({})}/>}</div>:

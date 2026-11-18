@@ -17,6 +17,11 @@ export const frames = (seconds: number) => Math.round(seconds * editFps);
 export const clipLength = (c: EditClip) => c.end - c.start;
 export const timelineLength = (t: Timeline) => t.clips.reduce((n,c) => n + clipLength(c), 0);
 export const frameLabel = (f: number) => (f/editFps).toFixed(2) + ' 秒';
+export function editTimecode(frame: number) {
+  const cs = Math.round(Math.max(0, frame) * 100 / editFps);
+  return [Math.floor(cs / 6000), Math.floor(cs / 100) % 60].map(n => String(n).padStart(2, '0')).join(':')
+    + '.' + String(cs % 100).padStart(2, '0');
+}
 export function makeClip(asset: Asset): EditClip {
   return { id: crypto.randomUUID(), assetId: asset.id, start: 0, end: Math.min(editMaxFrames, frames(asset.duration || 0)), volume: 1 };
 }
