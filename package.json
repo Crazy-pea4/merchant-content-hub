@@ -10,6 +10,7 @@
     "test": "node --import tsx --test tests/*.test.ts",
     "test:smoke": "node scripts/smoke.mjs",
     "test:appearance": "node scripts/appearance-smoke.mjs",
+    "test:video-edit": "node scripts/video-edit-smoke.mjs",
     "test:studio": "node scripts/studio-smoke.mjs",
     "test:browser": "node scripts/browser-smoke.mjs",
     "test:docker": "node scripts/docker-smoke.mjs",
@@ -34,6 +35,9 @@
     "node": ">=24.11.0"
   },
   "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
     "@xyflow/react": "^12.12.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

@@ -10,6 +10,13 @@ import type { Asset } from '../shared/types';
 
 const exec = promisify(execFile);
 const output = z.object({ title: z.string().trim().min(1).max(160), body: z.string().trim().min(1).max(30000) });
+export async function referenceFrame(asset: Asset, at: number, signal: AbortSignal) {
+  const { stdout } = await exec('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-ss', String(at), '-i', join(uploadDir, asset.storageKey),
+    '-frames:v', '1', '-vf', 'scale=512:512:force_original_aspect_ratio=decrease', '-f', 'image2pipe', '-vcodec', 'mjpeg', 'pipe:1'],
+  { encoding: 'buffer', maxBuffer: 1024 * 1024, timeout: 15000, signal }).catch(() => { throw new ApiError('读取参考画面失败，请检查素材后重试'); });
+  if (!stdout.length) throw new ApiError('未能读取参考画面，请检查素材后重试');
+  return 'data:image/jpeg;base64,' + stdout.toString('base64');
+}
 export async function writeStudioTurn(turn: StudioTurn, history: StudioTurn[], assets: Asset[], signal: AbortSignal) {
   const visual = visionConfiguration();
   const text = process.env.AI_BASE_URL && process.env.AI_MODEL && process.env.AI_API_KEY
@@ -29,11 +36,7 @@ export async function writeStudioTurn(turn: StudioTurn, history: StudioTurn[], a
     if (visual && pictures.includes(asset)) {
       const times = asset.kind === 'video' && asset.duration ? [0.12, 0.5, 0.85].map(n => asset.duration! * n) : [0];
       for (const at of times) {
-        const { stdout } = await exec('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-ss', String(at), '-i', join(uploadDir, asset.storageKey),
-          '-frames:v', '1', '-vf', 'scale=512:512:force_original_aspect_ratio=decrease', '-f', 'image2pipe', '-vcodec', 'mjpeg', 'pipe:1'],
-        { encoding: 'buffer', maxBuffer: 1024 * 1024, timeout: 15000, signal }).catch(() => { throw new ApiError('读取参考画面失败，请检查素材后重试'); });
-        if (!stdout.length) throw new ApiError('未能读取参考画面，请检查素材后重试');
-        parts.push({ type: 'text', text: asset.name + ' · ' + at.toFixed(1) + ' 秒' }, { type: 'image_url', image_url: { url: 'data:image/jpeg;base64,' + stdout.toString('base64') } });
+        parts.push({ type: 'text', text: asset.name + ' · ' + at.toFixed(1) + ' 秒' }, { type: 'image_url', image_url: { url: await referenceFrame(asset,at,signal) } });
       }
     } else if (!asset.segments.length && (asset.kind === 'audio' || asset.kind === 'video' || asset.kind === 'image')) {
       throw new ApiError('「' + asset.name + '」还没有可用的画面或逐字稿。可等待转写完成，或在素材详情补充逐字稿。');

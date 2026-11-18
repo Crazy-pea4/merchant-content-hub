@@ -18,11 +18,16 @@ const mediaTypes: Record<string, [Asset['kind'], string]> = {
 export async function hasCommand(name: 'ffmpeg' | 'ffprobe') {
   try { await exec(name, ['-version'], { timeout: 3000, maxBuffer: 100_000 }); return true; } catch { return false; }
 }
-export async function inspect(path: string): Promise<{ duration: number | null; video: boolean; audio: boolean }> {
-  const { stdout } = await exec('ffprobe', ['-v', 'error', '-show_entries', 'format=duration:stream=codec_type', '-of', 'json', path], { timeout: 15000, maxBuffer: 100_000 });
+export async function inspect(path: string): Promise<{ duration: number | null; video: boolean; audio: boolean; videoDuration: number | null; audioDuration: number | null }> {
+  const { stdout } = await exec('ffprobe', ['-v', 'error', '-show_entries', 'format=duration:stream=codec_type,duration', '-of', 'json', path], { timeout: 15000, maxBuffer: 100_000 });
   const info = JSON.parse(stdout);
   const duration = Number(info.format?.duration);
-  return { duration: Number.isFinite(duration) && duration > 0 ? duration : null, video: info.streams?.some((s: { codec_type: string }) => s.codec_type === 'video') || false, audio: info.streams?.some((s: { codec_type: string }) => s.codec_type === 'audio') || false };
+  const streams: { codec_type: string; duration?: string }[] = info.streams || [];
+  const video = streams.find(s => s.codec_type === 'video');
+  const audio = streams.find(s => s.codec_type === 'audio');
+  const streamDuration = (v?: string) => v && Number.isFinite(Number(v)) ? Number(v) : null;
+  return { duration: Number.isFinite(duration) && duration > 0 ? duration : null, video: !!video, audio: !!audio,
+    videoDuration: streamDuration(video?.duration), audioDuration: streamDuration(audio?.duration) };
 }
 export function maxUploadBytes() { return Math.min(512, Math.max(1, Number(process.env.MAX_UPLOAD_MB) || 128)) * 1024 * 1024; }
 export async function saveUpload(file: File, projectId: string, tags: string[], rights: Asset['rights'], expiresAt: string, note: string): Promise<Asset> {

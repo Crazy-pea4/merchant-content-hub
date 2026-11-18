@@ -1,3 +1,5 @@
+import { createEdit, updateEdit, planEdit, enqueueEditExport } from './video-edits';
+import { editPreviewResponse } from './video-edit-media';
 import { allowedOrigins } from '../api/config';
 import { timingSafeEqual } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
@@ -96,6 +98,13 @@ export async function handleApi(req: Request, path: string[]) {
       throw new service.ApiError('接口不存在', 404);
     }
     if (!authenticated(req)) throw new service.ApiError('请输入访问口令', 401);
+    if (resource === 'edit-previews' && key && method === 'GET') return await editPreviewResponse(key, req);
+    if (resource === 'video-edits') {
+      if (!key && method === 'POST') return json(await createEdit(await body(req)), 201);
+      if (key && !action && method === 'PATCH') return json(await updateEdit(key, await body(req)));
+      if (key && action === 'plan' && method === 'POST') return json(await planEdit(key, await body(req)));
+      if (key && action === 'exports' && method === 'POST') return json(await enqueueEditExport(key, await body(req)), 202);
+    }
     if (resource === 'studio' && !key && method === 'GET') return json(await studioState());
     if (resource === 'studio-sessions') {
       if (!key && method === 'POST') return json(await openStudio(await body(req)));

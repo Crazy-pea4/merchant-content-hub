@@ -1,3 +1,4 @@
+import type { VideoEdit, EditExport } from './video-edit';
 import type { Asset, Content, Project } from './types';
 
 export const studioModes = { script: '剧本', shots: '分镜', copy: '文案' } as const;
@@ -18,7 +19,7 @@ export interface StudioMedia {
   url: string; text: string; createdAt: string;
 }
 export interface StudioState {
-  projects: Pick<Project, 'id' | 'name' | 'createdAt'>[]; sessions: StudioSession[];
+  edits: VideoEdit[]; exports: EditExport[]; projects: Pick<Project, 'id' | 'name' | 'createdAt'>[]; sessions: StudioSession[];
   assets: Asset[]; contents: Content[]; media: StudioMedia[]; ai: boolean;
 }
 export type BoardChange = { action: 'move'; node: string; x: number; y: number } |

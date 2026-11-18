@@ -1,3 +1,4 @@
+import { publicEdit, publicExport } from './video-edits';
 import { z } from 'zod';
 import { all, get, put, now, transaction } from './db';
 import { ApiError, required } from './errors';
@@ -25,10 +26,11 @@ const timeoutMs = 120000;
 function stale(t: StudioTurn) { return t.status === 'writing' && Date.now() - Date.parse(t.updatedAt) > timeoutMs + 15000; }
 
 export async function studioState(): Promise<StudioState> {
-  const [projects, sessions, assets, contents, voices, subtitles, renders] = await Promise.all([
-    all('projects'), all('studio_sessions'), assetsWithTranscription(), all('contents'), all('dubbings'), all('douyin_extractions'), all('narration_renders'),
+  const [projects, sessions, assets, contents, voices, subtitles, renders, edits, exportsList] = await Promise.all([
+    all('projects'), all('studio_sessions'), assetsWithTranscription(), all('contents'), all('dubbings'), all('douyin_extractions'), all('narration_renders'), all('video_edits'), all('edit_exports'),
   ]);
   return {
+    edits: edits.map(publicEdit), exports: exportsList.map(publicExport),
     projects: projects.map(({ id, name, createdAt }) => ({ id, name, createdAt })),
     sessions: sessions.map(s => ({ ...s, turns: s.turns.map(t => stale(t) ? { ...t, status: 'failed', error: '上次生成中断，可重新尝试' } : t) })),
     assets, contents: contents.map(c => ({ ...c, reviewToken: null })),
@@ -116,6 +118,8 @@ export async function changeBoard(key: string, input: unknown) {
     const s = await sessionFor(key);
     async function hasNode(node: string) {
       if (node.startsWith('a:')) { const id = node.slice(2); return s.attached.includes(id) || (await get('assets', id))?.projectId === key; }
+      if (node.startsWith('e:')) return (await get('video_edits',node.slice(2)))?.projectId === key;
+      if (node.startsWith('m:')) return (await all('video_edits')).some(e=>e.projectId===key && e.timeline.voiceId===node);
       if (node.startsWith('w:')) return s.turns.some(t => t.id === node.slice(2) && t.status === 'done') || (await get('contents', node.slice(2)))?.projectId === key;
       return false;
     }

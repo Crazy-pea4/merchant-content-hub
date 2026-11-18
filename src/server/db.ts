@@ -10,15 +10,16 @@ import type { TranscriptionJob } from './transcription-queue';
 import type { AsrJob } from './asr';
 import type { StoredVoice, StoredDubbing, StoredDubbingSource } from './dubbing';
 import type { StoredNarration, StoredNarrationRender } from './narration';
+import type { StoredEdit, StoredExport } from './video-edits';
 import type { StudioSession } from '../shared/studio';
 import type { StoredDouyinExtraction } from './douyin';
 import type { Merchant, Project, Asset, Content, ShotTask, Activity } from '../shared/types';
 
 export const dataDir = resolve(process.env.DATA_DIR || './data');
 mkdirSync(dataDir, { recursive: true });
-export interface Records { merchants: Merchant; projects: Project; assets: Asset; contents: Content; tasks: ShotTask; activities: Activity; asr_jobs: AsrJob; transcription_jobs: TranscriptionJob; voices: StoredVoice; dubbings: StoredDubbing; dubbing_sources: StoredDubbingSource; narrations: StoredNarration; narration_renders: StoredNarrationRender; douyin_extractions: StoredDouyinExtraction; studio_sessions: StudioSession }
+export interface Records { merchants: Merchant; projects: Project; assets: Asset; contents: Content; tasks: ShotTask; activities: Activity; asr_jobs: AsrJob; transcription_jobs: TranscriptionJob; voices: StoredVoice; dubbings: StoredDubbing; dubbing_sources: StoredDubbingSource; narrations: StoredNarration; narration_renders: StoredNarrationRender; douyin_extractions: StoredDouyinExtraction; studio_sessions: StudioSession; video_edits: StoredEdit; edit_exports: StoredExport }
 export type Table = keyof Records;
-export const tables: Table[] = ['merchants', 'projects', 'assets', 'contents', 'tasks', 'activities', 'asr_jobs', 'transcription_jobs', 'voices', 'dubbings', 'dubbing_sources', 'narrations', 'narration_renders', 'douyin_extractions', 'studio_sessions'];
+export const tables: Table[] = ['merchants', 'projects', 'assets', 'contents', 'tasks', 'activities', 'asr_jobs', 'transcription_jobs', 'voices', 'dubbings', 'dubbing_sources', 'narrations', 'narration_renders', 'douyin_extractions', 'studio_sessions','video_edits','edit_exports'];
 export const id = () => randomUUID();
 export const now = () => new Date().toISOString();
 export const databaseDriver = process.env.DB_DRIVER === 'sqlite' ? 'sqlite' : 'postgres';
@@ -70,7 +71,7 @@ async function rawPut<T extends Table>(table: T, record: Records[T]): Promise<Re
   if (table === 'transcription_jobs') {
     const j = record as TranscriptionJob;
     await rawQuery('INSERT INTO transcription_jobs(id,project_id,status,run_at,lease_until,data) VALUES($1,$2,$3,$4,$5,$6) ON CONFLICT(id) DO UPDATE SET project_id=excluded.project_id,status=excluded.status,run_at=excluded.run_at,lease_until=excluded.lease_until,data=excluded.data', [j.id, j.projectId, j.status, j.runAt, j.leaseUntil, payload]);
-  } else if (['merchants', 'voices', 'dubbings', 'dubbing_sources', 'narrations', 'narration_renders', 'douyin_extractions', 'studio_sessions'].includes(table)) await rawQuery(`INSERT INTO ${table}(id,data) VALUES($1,$2) ON CONFLICT(id) DO UPDATE SET data=excluded.data`, [record.id, payload]);
+  } else if (['merchants', 'voices', 'dubbings', 'dubbing_sources', 'narrations', 'narration_renders', 'douyin_extractions', 'studio_sessions','video_edits','edit_exports'].includes(table)) await rawQuery(`INSERT INTO ${table}(id,data) VALUES($1,$2) ON CONFLICT(id) DO UPDATE SET data=excluded.data`, [record.id, payload]);
   else if (table === 'projects') await rawQuery('INSERT INTO projects(id,merchant_id,data) VALUES($1,$2,$3) ON CONFLICT(id) DO UPDATE SET merchant_id=excluded.merchant_id,data=excluded.data', [record.id, (record as Project).merchantId, payload]);
   else await rawQuery(`INSERT INTO ${table}(id,project_id,data) VALUES($1,$2,$3) ON CONFLICT(id) DO UPDATE SET project_id=excluded.project_id,data=excluded.data`, [record.id, (record as Asset).projectId, payload]);
   return record;
@@ -83,7 +84,7 @@ async function initialize() {
       CREATE TABLE IF NOT EXISTS merchants(id TEXT PRIMARY KEY, ordinal BIGSERIAL UNIQUE, data JSONB NOT NULL CHECK(data->>'id'=id));
       CREATE TABLE IF NOT EXISTS projects(id TEXT PRIMARY KEY, ordinal BIGSERIAL UNIQUE, merchant_id TEXT NOT NULL REFERENCES merchants(id), data JSONB NOT NULL CHECK(data->>'id'=id AND data->>'merchantId'=merchant_id));
       ${['assets','contents','tasks','activities'].map(t => `CREATE TABLE IF NOT EXISTS ${t}(id TEXT PRIMARY KEY, ordinal BIGSERIAL UNIQUE, project_id TEXT NOT NULL REFERENCES projects(id), data JSONB NOT NULL CHECK(data->>'id'=id AND data->>'projectId'=project_id));`).join('\n')}
-      ${['voices','dubbings','dubbing_sources','narrations','narration_renders','douyin_extractions', 'studio_sessions'].map(t => `CREATE TABLE IF NOT EXISTS ${t}(id TEXT PRIMARY KEY, ordinal BIGSERIAL UNIQUE, data JSONB NOT NULL CHECK(data->>'id'=id));`).join('\n')}
+      ${['voices','dubbings','dubbing_sources','narrations','narration_renders','douyin_extractions', 'studio_sessions','video_edits','edit_exports'].map(t => `CREATE TABLE IF NOT EXISTS ${t}(id TEXT PRIMARY KEY, ordinal BIGSERIAL UNIQUE, data JSONB NOT NULL CHECK(data->>'id'=id));`).join('\n')}
       CREATE TABLE IF NOT EXISTS asr_jobs(id TEXT PRIMARY KEY REFERENCES assets(id) ON DELETE CASCADE, ordinal BIGSERIAL UNIQUE, project_id TEXT NOT NULL REFERENCES projects(id), data JSONB NOT NULL CHECK(data->>'id'=id AND data->>'projectId'=project_id));
       CREATE TABLE IF NOT EXISTS transcription_jobs(id TEXT PRIMARY KEY REFERENCES assets(id) ON DELETE CASCADE, ordinal BIGSERIAL UNIQUE, project_id TEXT NOT NULL REFERENCES projects(id), status TEXT NOT NULL, run_at BIGINT NOT NULL, lease_until BIGINT NOT NULL, data JSONB NOT NULL CHECK(data->>'id'=id AND data->>'projectId'=project_id));
       CREATE INDEX IF NOT EXISTS transcription_due ON transcription_jobs(status,run_at,lease_until);
@@ -95,7 +96,7 @@ async function initialize() {
       CREATE TABLE IF NOT EXISTS merchants(id TEXT PRIMARY KEY,data TEXT NOT NULL CHECK(json_valid(data)));
       CREATE TABLE IF NOT EXISTS projects(id TEXT PRIMARY KEY,merchant_id TEXT NOT NULL REFERENCES merchants(id),data TEXT NOT NULL CHECK(json_valid(data)));
       ${['assets','contents','tasks','activities'].map(t => `CREATE TABLE IF NOT EXISTS ${t}(id TEXT PRIMARY KEY,project_id TEXT NOT NULL REFERENCES projects(id),data TEXT NOT NULL CHECK(json_valid(data)));`).join('\n')}
-      ${['voices','dubbings','dubbing_sources','narrations','narration_renders','douyin_extractions', 'studio_sessions'].map(t => `CREATE TABLE IF NOT EXISTS ${t}(id TEXT PRIMARY KEY,data TEXT NOT NULL CHECK(json_valid(data)));`).join('\n')}
+      ${['voices','dubbings','dubbing_sources','narrations','narration_renders','douyin_extractions', 'studio_sessions','video_edits','edit_exports'].map(t => `CREATE TABLE IF NOT EXISTS ${t}(id TEXT PRIMARY KEY,data TEXT NOT NULL CHECK(json_valid(data)));`).join('\n')}
       CREATE TABLE IF NOT EXISTS asr_jobs(id TEXT PRIMARY KEY REFERENCES assets(id) ON DELETE CASCADE,project_id TEXT NOT NULL REFERENCES projects(id),data TEXT NOT NULL CHECK(json_valid(data)));
       CREATE TABLE IF NOT EXISTS transcription_jobs(id TEXT PRIMARY KEY REFERENCES assets(id) ON DELETE CASCADE,project_id TEXT NOT NULL REFERENCES projects(id),status TEXT NOT NULL,run_at INTEGER NOT NULL,lease_until INTEGER NOT NULL,data TEXT NOT NULL CHECK(json_valid(data)));
       CREATE INDEX IF NOT EXISTS transcription_due ON transcription_jobs(status,run_at,lease_until); PRAGMA user_version=5;`);
@@ -112,7 +113,7 @@ async function initialize() {
           source.exec('BEGIN'); const counts: Record<string, number> = {};
           const assetMap = new Map((source.prepare('SELECT data FROM assets').all()).map(row => { const a=JSON.parse(String(row.data)) as Asset;return [a.id,a]; }));
           for (const table of tables) {
-            if (['voices', 'dubbings', 'dubbing_sources', 'narrations', 'narration_renders', 'douyin_extractions', 'studio_sessions'].includes(table) && !source.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name=?").get(table)) { counts[table] = 0; continue; }
+            if (['voices', 'dubbings', 'dubbing_sources', 'narrations', 'narration_renders', 'douyin_extractions', 'studio_sessions','video_edits','edit_exports'].includes(table) && !source.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name=?").get(table)) { counts[table] = 0; continue; }
             const rows = source.prepare(`SELECT data FROM ${table} ORDER BY rowid ASC`).all(); counts[table] = rows.length;
             for (const row of rows) {
               const record=JSON.parse(String(row.data));

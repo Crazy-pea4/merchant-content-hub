@@ -2,36 +2,38 @@
 import { useState } from 'react';
 import { ArrowDownToLine, ArrowUpRight, AudioLines, Check, Copy, FileText, Film, FolderOpen, Image as ImageIcon, LayoutList, Pencil, Search, X } from 'lucide-react';
 import { studioModes, type StudioState, type StudioTurn } from '@/shared/studio';
+import type { VideoEdit } from '@/shared/video-edit';
 import type { Asset, Content } from '@/shared/types';
 
 export interface ShelfItem {
   id: string; projectId?: string; title: string; body: string; kind: string; date: string;
-  url?: string; asset?: Asset; turn?: StudioTurn; content?: Content;
+  url?: string; edit?: VideoEdit; asset?: Asset; turn?: StudioTurn; content?: Content;
 }
 export function shelfItems(state: StudioState): ShelfItem[] {
   const labels = {video:'视频',audio:'音频',image:'图片',document:'文稿'};
   return [
+    ...state.edits.map(edit=>({id:'e:'+edit.id,projectId:edit.projectId,title:edit.title,body:edit.messages.map(m=>m.prompt).join('\n'),kind:'剪辑草稿',date:edit.updatedAt,edit})),
     ...state.sessions.flatMap(s => s.turns.filter(t => t.status === 'done').map(t => ({id:'w:'+t.id,projectId:s.id,title:t.title,body:t.body,kind:studioModes[t.mode],date:t.updatedAt,turn:t}))),
     ...state.contents.map(c => ({id:'w:'+c.id,projectId:c.projectId,title:c.title,body:c.script,kind:'剧本',date:c.createdAt,content:c})),
-    ...state.assets.map(a => ({id:'a:'+a.id,projectId:a.projectId,title:a.name,body:a.segments.map(s=>s.text).join('\n'),kind:labels[a.kind],date:a.createdAt,asset:a,url:a.storageKey?'/api/files/'+a.id:undefined})),
+    ...state.assets.map(a => ({id:'a:'+a.id,projectId:a.projectId,title:a.name,body:a.segments.map(s=>s.text).join('\n'),kind:state.exports.some(j=>j.assetId===a.id)?'成片':labels[a.kind],date:a.createdAt,asset:a,url:a.storageKey?'/api/files/'+a.id:undefined})),
     ...state.media.map(m => ({id:'m:'+m.id,projectId:m.projectId,title:m.title,body:m.text,kind:m.kind,date:m.createdAt,url:m.url})),
   ].sort((a,b)=>b.date.localeCompare(a.date));
 }
 export function KindIcon({kind,size=16}:{kind:string;size?:number}) {
-  const Icon=kind==='视频'||kind==='成片'?Film:kind==='配音'||kind==='音频'?AudioLines:kind==='图片'?ImageIcon:kind==='分镜'?LayoutList:FileText;
+  const Icon=kind==='视频'||kind==='剪辑草稿'||kind==='成片'?Film:kind==='配音'||kind==='音频'?AudioLines:kind==='图片'?ImageIcon:kind==='分镜'?LayoutList:FileText;
   return <Icon size={size}/>;
 }
 function mediaDuration(seconds: number) {
   const value = Math.floor(seconds);
   return Math.floor(value / 60).toString().padStart(2, '0') + ':' + (value % 60).toString().padStart(2, '0');
 }
-export function Library({items,onOpen}:{items:ShelfItem[];onOpen:(id:string)=>void}) {
+export function Library({items,onOpen,onEdit}:{onEdit:()=>void;items:ShelfItem[];onOpen:(id:string)=>void}) {
   const [filter,setFilter]=useState('全部'),[query,setQuery]=useState(''),[kind,setKind]=useState('');
-  const group = items.filter(i=>filter==='全部'||(filter==='作品'?!!(i.turn||i.content||i.id.startsWith('m:')):!!i.asset));
+  const group = items.filter(i=>filter==='全部'||(filter==='作品'?!!(i.edit||i.kind==='成片'||i.turn||i.content||i.id.startsWith('m:')):!!i.asset));
   const kinds = [...new Set(group.map(i=>i.kind))];
   const shown=group.filter(i=>(!kind||i.kind===kind)&&(i.title+' '+i.body).toLowerCase().includes(query.trim().toLowerCase()));
   return <section className="studio-library">
-    <header className="library-heading"><h1>我的资产</h1>
+    <header className="library-heading"><h1>我的资产</h1><button className="cut-new" onClick={onEdit}><Film size={15}/>新建剪辑</button>
       <label className="shelf-search"><Search size={15}/><input placeholder="搜索资产" aria-label="搜索资产" value={query} onChange={e=>setQuery(e.target.value)}/></label></header>
     <div className="library-bar"><div className="studio-tabs">{['全部','作品','素材'].map(f=><button aria-pressed={f===filter} className={f===filter?'selected':''} onClick={()=>{setFilter(f);setKind('');}} key={f}>{f}</button>)}</div>
       {kinds.length>1&&<select className="library-kind" aria-label="资产类型" value={kind} onChange={e=>setKind(e.target.value)}><option value="">全部类型</option>{kinds.map(k=><option key={k}>{k}</option>)}</select>}</div>
@@ -55,7 +57,7 @@ function Prose({text}:{text:string}) {
     return <p key={i}>{flat.replace(/^[-*]\s/,'• ')}</p>;
   })}</div>;
 }
-export function StudioDocument({item,save,continueWork,notify}:{item:ShelfItem;save:(title:string,body:string,version:number)=>Promise<boolean>;continueWork?:()=>void;notify:(s:string)=>void}) {
+export function StudioDocument({item,save,continueWork,notify,cut}:{cut?:()=>void;item:ShelfItem;save:(title:string,body:string,version:number)=>Promise<boolean>;continueWork?:()=>void;notify:(s:string)=>void}) {
   const [editing,setEditing]=useState(false),[title,setTitle]=useState(''),[body,setBody]=useState(''),[version,setVersion]=useState(0),[busy,setBusy]=useState(false);
   const [preview,setPreview]=useState(false);
   const example=item.turn?.provider==='demo'?' · 本地示例':'';
@@ -87,7 +89,7 @@ export function StudioDocument({item,save,continueWork,notify}:{item:ShelfItem;s
     <h3>{item.title}</h3><Prose text={item.body}/><div className="doc-actions">
       <button onClick={()=>{setTitle(item.title);setBody(item.body);setVersion(item.turn?.version||item.content?.version||1);setPreview(false);setEditing(true);}}><Pencil size={14}/>直接编辑</button>
       <button onClick={async()=>{try{await navigator.clipboard.writeText(item.title+'\n\n'+item.body);notify('正文已复制');}catch{notify('请选中正文复制');}}}><Copy size={14}/>复制</button>
-      {continueWork&&<button onClick={continueWork}>继续创作<ArrowUpRight size={14}/></button>}</div>
+      {cut&&<button onClick={cut}><Film size={14}/>按此脚本剪辑</button>}{continueWork&&<button onClick={continueWork}>继续创作<ArrowUpRight size={14}/></button>}</div>
   </article>;
 }
 export function MediaReader({item,sessionTitle,onAuthorize,use}:{item:ShelfItem;sessionTitle?:string;onAuthorize:()=>void;use?:()=>void}){

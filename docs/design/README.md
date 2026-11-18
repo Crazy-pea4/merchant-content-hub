@@ -25,6 +25,7 @@
 | 上传、录音与业务表单 | `弹窗` | [暗色与明亮](./19-dialogs.webp) |
 | 手机创作与审核 | `移动端` | [暗色与明亮](./20-mobile.webp) |
 | 链接不可用与未找到页面 | `/review/[失效链接]、404` | [暗色与明亮](./21-status.webp) |
+| 视频剪辑 | `/?tab=edit&s=…&item=e:…` | [暗色与明亮](./22-video-editor.webp) |
 
 ## 生成提示词
 
@@ -116,6 +117,8 @@ Mobile responsive design specs, override desktop composition: inside each theme 
 
 Two standalone sparse status examples within each theme artboard: a missing page titled 页面不存在 with home link 返回创作室, and an expired client review link titled 这份审核链接暂不可用 with contact instruction. Subtle iris/status line icon, concise centered readable surfaces and top-right theme toggle.
 
+
+**22 · 视频剪辑**。同一桌面剪辑草稿的暗色与明亮状态。播放器占据主要区域，底部横向镜头条显示真实缩略图，选中镜头后展现裁切、音量与逐字稿。
 
 ## 网页使用的首页插画
 
